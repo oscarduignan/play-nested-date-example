@@ -1,0 +1,89 @@
+@import uk.gov.hmrc.govukfrontend.views.html.components.GovukLayout
+@import uk.gov.hmrc.govukfrontend.views.html.components.FormWithCSRF
+@import uk.gov.hmrc.govukfrontend.views.html.components.GovukDetails
+@import uk.gov.hmrc.govukfrontend.views.html.components.GovukButton
+@import uk.gov.hmrc.govukfrontend.views.html.components.GovukInput
+
+@import uk.gov.hmrc.hmrcfrontend.views.html.components._
+@import uk.gov.hmrc.hmrcfrontend.views.html.helpers.{HmrcStandardHeader, HmrcStandardFooter, HmrcScripts, HmrcHead, HmrcLanguageSelectHelper}
+@import uk.gov.hmrc.govukfrontend.views.viewmodels.hint.Hint
+@import uk.gov.hmrc.govukfrontend.views.viewmodels.fieldset.Fieldset
+@import uk.gov.hmrc.govukfrontend.views.viewmodels.fieldset.Legend
+@import uk.gov.hmrc.govukfrontend.views.html.components.GovukDateInput
+@import uk.gov.hmrc.govukfrontend.views.Aliases.Text
+@import uk.gov.hmrc.govukfrontend.views.viewmodels.dateinput.DateInput
+@import uk.gov.hmrc.govukfrontend.views.viewmodels.button.Button
+@import uk.gov.hmrc.govukfrontend.views.viewmodels.dateinput.InputItem
+@import uk.gov.hmrc.govukfrontend.views.Aliases.ErrorMessage
+@import views.html.helper.form
+@import scala.reflect.internal.NoPhase.id
+
+@this(
+        hmrcCurrencyInput: HmrcCurrencyInput,
+        govukLayout: GovukLayout,
+        hmrcStandardHeader: HmrcStandardHeader,
+        hmrcStandardFooter: HmrcStandardFooter,
+        head: HmrcHead,
+        hmrcLanguageSelectHelper: HmrcLanguageSelectHelper,
+        scripts: HmrcScripts,
+        hmrcAddToAList: HmrcAddToAList,
+        formWithCSRF: FormWithCSRF,
+        govukDetails: GovukDetails,
+        govukInput: GovukInput,
+        govukButton: GovukButton,
+        govukDateInput: GovukDateInput
+)
+
+@(userForm: Form[_])(implicit request: RequestHeader, messages: Messages)
+
+@govukLayout(
+  pageTitle = Some("Example HMRC Frontend"),
+  headBlock = Some(head()),
+  headerBlock = Some(hmrcStandardHeader(displayHmrcBanner = true)),
+  scriptsBlock = Some(scripts()),
+  footerBlock = Some(hmrcStandardFooter())
+) {
+  @formWithCSRF(routes.HomeController.index(), 'id -> "userForm") {
+
+    @govukDateInput(DateInput(
+      id = "passport-issued",
+      namePrefix = None,
+      items = Seq(
+        InputItem(
+          id = userForm("dateOfBirth.day").id,
+          // just to show how errors can be retrieved from nested fields
+          classes = s"govuk-input--width-2 ${if (userForm("dateOfBirth")("day").error.isDefined) "govuk-input--error" else ""}",
+          name = userForm("dateOfBirth.day").name,
+          label = Some("Day"),
+          value = userForm("dateOfBirth.day").value
+        ),
+        InputItem(
+          id = userForm("dateOfBirth")("month").id,
+          classes = s"govuk-input--width-2",
+          name = userForm("dateOfBirth")("month").name,
+          label = Some("Month"),
+          value = userForm("dateOfBirth")("month").value
+        ),
+        InputItem(
+          id = userForm("dateOfBirth.year").id,
+          classes = s"govuk-input--width-4",
+          name = userForm("dateOfBirth.year").name,
+          label = Some("Year"),
+          value = userForm("dateOfBirth.year").value
+        )
+      ),
+      hint = Some(Hint(
+        content = Text("For example, 12 11 2007")
+      )),
+      fieldset = Some(Fieldset(
+        legend = Some(Legend(
+          content = Text("When was your passport issued?"),
+          classes = "govuk-fieldset__legend--l",
+          isPageHeading = true
+        ))
+      )),
+      errorMessage = (userForm("dateOfBirth").error ++ userForm("dateOfBirth.day").error).headOption.map(err => ErrorMessage(content = Text(err.message)))
+    ))
+    @govukButton(Button(content = Text("Submit")))
+  }
+}
